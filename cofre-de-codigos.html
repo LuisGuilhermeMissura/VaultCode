@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cofre // vault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/nord.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+:root{
+  --bg-base:#0b0f16;
+  --bg-panel:#111826;
+  --bg-elevated:#1a2333;
+  --bg-hover:#1f2a3d;
+  --border:#25324699;
+  --border-solid:#25324a;
+  --text-primary:#e7edf6;
+  --text-dim:#7c8aa5;
+  --text-faint:#4d5872;
+  --accent-purple:#c792ea;
+  --accent-mint:#7fdbca;
+  --accent-amber:#f2c94c;
+  --accent-red:#f2777a;
+  --accent-blue:#82aaff;
+  --mono:'JetBrains Mono', ui-monospace, monospace;
+  --sans:'Inter', system-ui, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg-base);
+  color:var(--text-primary);
+  font-family:var(--sans);
+  height:100vh;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--accent-purple);color:#0b0f16;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--bg-elevated);border-radius:8px;border:2px solid var(--bg-base);}
+::-webkit-scrollbar-thumb:hover{background:var(--bg-hover);}
+
+button{font-family:var(--sans);cursor:pointer;}
+input,select,textarea{font-family:var(--sans);}
+
+/* ---------- LOCK SCREEN ---------- */
+#lockScreen{
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 20% 15%, #14203499 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, #1a2b1f66 0%, transparent 40%),
+    var(--bg-base);
+  position:relative;
+}
+#lockScreen::before{
+  content:'';
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:42px 42px;
+  opacity:.25;
+  mask-image:radial-gradient(circle at 50% 40%, black, transparent 70%);
+}
+.lock-card{
+  position:relative;
+  width:440px;
+  max-width:92vw;
+  background:var(--bg-panel);
+  border:1px solid var(--border-solid);
+  border-radius:10px;
+  box-shadow:0 30px 80px -20px #000000aa, 0 0 0 1px #ffffff05 inset;
+  overflow:hidden;
+}
+.lock-titlebar{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  background:var(--bg-elevated);
+  border-bottom:1px solid var(--border-solid);
+}
+.dot{width:10px;height:10px;border-radius:50%;}
+.dot.r{background:#f2777a}.dot.y{background:#f2c94c}.dot.g{background:#7fdbca}
+.lock-titlebar span{
+  margin-left:8px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-dim);
+}
+.lock-body{padding:34px 32px 30px;}
+.lock-glyph{
+  font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:.14em;
+  color:var(--accent-mint);text-transform:uppercase;margin-bottom:6px;
+}
+.lock-title{
+  font-family:var(--mono);font-weight:700;font-size:26px;line-height:1.25;
+  margin:0 0 6px;color:var(--text-primary);
+}
+.lock-sub{color:var(--text-dim);font-size:13.5px;margin:0 0 26px;line-height:1.5;}
+.prompt-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg-base);
+  border:1px solid var(--border-solid);
+  border-radius:7px;
+  padding:12px 14px;
+  font-family:var(--mono);
+}
+.prompt-row span.chevron{color:var(--accent-mint);font-weight:700;}
+.prompt-row input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text-primary);font-family:var(--mono);font-size:15px;
+  letter-spacing:.02em;
+}
+.cursor-blink{
+  width:8px;height:17px;background:var(--accent-mint);
+  animation:blink 1s step-end infinite;flex-shrink:0;
+}
+@keyframes blink{50%{opacity:0;}}
+.lock-actions{margin-top:20px;display:flex;flex-direction:column;gap:10px;}
+.btn{
+  border-radius:7px;border:1px solid var(--border-solid);
+  padding:11px 16px;font-size:13.5px;font-weight:600;
+  background:var(--bg-elevated);color:var(--text-primary);
+  transition:background .15s,border-color .15s,transform .05s;
+}
+.btn:hover{background:var(--bg-hover);border-color:#33415c;}
+.btn:active{transform:scale(.98);}
+.btn-primary{
+  background:linear-gradient(180deg,#8fe3d0,#6bc9b6);
+  color:#08211b;border:none;font-family:var(--mono);font-weight:700;
+  letter-spacing:.01em;
+}
+.btn-primary:hover{filter:brightness(1.06);}
+.btn-danger{background:var(--bg-elevated);color:var(--accent-red);border-color:#3a2226;}
+.btn-danger:hover{background:#2a1518;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+.btn-ghost:hover{background:var(--bg-elevated);color:var(--text-primary);}
+.lock-error{
+  color:var(--accent-red);font-size:12.5px;font-family:var(--mono);
+  margin-top:12px;min-height:16px;
+}
+.lock-footnote{
+  margin-top:22px;padding-top:16px;border-top:1px dashed var(--border-solid);
+  font-size:11.5px;color:var(--text-faint);line-height:1.6;font-family:var(--mono);
+}
+.switch-mode{
+  text-align:center;margin-top:14px;font-size:12.5px;color:var(--text-faint);
+}
+.switch-mode a{color:var(--accent-blue);cursor:pointer;text-decoration:none;}
+.switch-mode a:hover{text-decoration:underline;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;height:100vh;flex-direction:column;}
+#app.active{display:flex;}
+.topbar{
+  height:54px;flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+  padding:0 16px;
+  background:var(--bg-panel);
+  border-bottom:1px solid var(--border-solid);
+}
+.brand{
+  display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-weight:700;font-size:14px;
+  color:var(--text-primary);margin-right:10px;flex-shrink:0;
+}
+.brand .brand-dot{width:8px;height:8px;border-radius:50%;background:var(--accent-mint);box-shadow:0 0 8px var(--accent-mint);}
+.search-wrap{
+  flex:1;max-width:420px;
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg-base);border:1px solid var(--border-solid);
+  border-radius:7px;padding:7px 12px;
+}
+.search-wrap input{
+  flex:1;background:none;border:none;outline:none;color:var(--text-primary);
+  font-size:13px;font-family:var(--mono);
+}
+.search-wrap svg{flex-shrink:0;opacity:.5;}
+.topbar-spacer{flex:1;}
+.topbar-actions{display:flex;gap:8px;}
+.icon-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--bg-elevated);border:1px solid var(--border-solid);
+  color:var(--text-primary);border-radius:7px;padding:8px 12px;
+  font-size:12.5px;font-weight:600;
+}
+.icon-btn:hover{background:var(--bg-hover);}
+.icon-btn.primary{
+  background:var(--accent-purple);color:#20122b;border:none;
+}
+.icon-btn.primary:hover{filter:brightness(1.08);}
+
+.body-wrap{flex:1;display:flex;min-height:0;}
+.sidebar{
+  width:280px;flex-shrink:0;
+  background:var(--bg-panel);
+  border-right:1px solid var(--border-solid);
+  overflow-y:auto;
+  padding:12px 0;
+}
+.sidebar-section-title{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  color:var(--text-faint);text-transform:uppercase;
+  padding:6px 16px;margin-top:4px;
+}
+.project-row{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 16px;cursor:pointer;
+  color:var(--text-primary);font-size:13px;font-weight:600;
+  user-select:none;
+}
+.project-row:hover{background:var(--bg-elevated);}
+.project-row .caret{
+  transition:transform .15s;color:var(--text-faint);flex-shrink:0;
+}
+.project-row.open .caret{transform:rotate(90deg);}
+.project-row .pname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.project-row .count{color:var(--text-faint);font-size:11px;font-family:var(--mono);}
+.snippet-list{display:none;}
+.snippet-list.open{display:block;}
+.snippet-row{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 16px 6px 38px;cursor:pointer;
+  font-size:12.5px;color:var(--text-dim);
+  border-left:2px solid transparent;
+}
+.snippet-row:hover{background:var(--bg-elevated);color:var(--text-primary);}
+.snippet-row.active{
+  background:var(--bg-elevated);color:var(--text-primary);
+  border-left:2px solid var(--accent-mint);
+}
+.lang-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.snippet-row .sname{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.empty-sidebar{
+  padding:20px 16px;color:var(--text-faint);font-size:12px;line-height:1.6;
+}
+
+.main-pane{flex:1;min-width:0;overflow-y:auto;background:var(--bg-base);}
+.welcome{
+  height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  color:var(--text-faint);text-align:center;padding:40px;
+}
+.welcome-glyph{font-family:var(--mono);font-size:64px;margin-bottom:10px;color:var(--border-solid);}
+.welcome h2{font-family:var(--mono);color:var(--text-dim);font-size:16px;margin:0 0 6px;}
+.welcome p{font-size:13px;max-width:340px;line-height:1.6;margin:0;}
+
+.snippet-view{padding:24px 30px 60px;max-width:980px;}
+.sv-header{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:16px;margin-bottom:18px;flex-wrap:wrap;
+}
+.sv-title{font-family:var(--mono);font-size:22px;font-weight:700;margin:0 0 8px;word-break:break-word;}
+.sv-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.badge{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  padding:3px 9px;border-radius:20px;border:1px solid var(--border-solid);
+  color:var(--text-dim);display:flex;align-items:center;gap:5px;
+}
+.tag-badge{background:var(--bg-elevated);color:var(--text-dim);}
+.sv-actions{display:flex;gap:8px;flex-shrink:0;}
+.sv-timestamp{color:var(--text-faint);font-size:11.5px;font-family:var(--mono);margin-top:10px;}
+.code-block-wrap{
+  margin-top:18px;border:1px solid var(--border-solid);border-radius:8px;
+  overflow:hidden;background:#0d1420;
+}
+.code-block-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;background:var(--bg-elevated);
+  border-bottom:1px solid var(--border-solid);
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+}
+pre.code-pre{margin:0;padding:16px;overflow-x:auto;font-size:12.5px;line-height:1.65;}
+pre.code-pre code{font-family:var(--mono) !important;}
+.copy-mini{background:none;border:none;color:var(--text-dim);font-family:var(--mono);font-size:11px;}
+.copy-mini:hover{color:var(--accent-mint);}
+
+/* ---------- MODALS ---------- */
+.modal-overlay{
+  position:fixed;inset:0;background:#05070bcc;backdrop-filter:blur(3px);
+  display:none;align-items:center;justify-content:center;z-index:50;padding:20px;
+}
+.modal-overlay.active{display:flex;}
+.modal{
+  background:var(--bg-panel);border:1px solid var(--border-solid);
+  border-radius:10px;width:560px;max-width:100%;max-height:88vh;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 30px 80px -20px #000c;
+}
+.modal.wide{width:680px;}
+.modal-head{
+  padding:16px 20px;border-bottom:1px solid var(--border-solid);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-head h3{margin:0;font-family:var(--mono);font-size:15px;}
+.modal-close{background:none;border:none;color:var(--text-faint);font-size:18px;line-height:1;}
+.modal-close:hover{color:var(--text-primary);}
+.modal-body{padding:20px;overflow-y:auto;}
+.modal-foot{
+  padding:14px 20px;border-top:1px solid var(--border-solid);
+  display:flex;justify-content:flex-end;gap:10px;
+}
+.field{margin-bottom:14px;}
+.field label{
+  display:block;font-size:11.5px;font-weight:600;color:var(--text-dim);
+  margin-bottom:6px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;
+}
+.field input[type=text], .field select, .field textarea{
+  width:100%;background:var(--bg-base);border:1px solid var(--border-solid);
+  border-radius:6px;padding:9px 11px;color:var(--text-primary);font-size:13px;outline:none;
+}
+.field input[type=text]:focus, .field select:focus, .field textarea:focus{border-color:var(--accent-purple);}
+.field textarea{
+  font-family:var(--mono);font-size:12.5px;line-height:1.6;min-height:220px;resize:vertical;
+}
+.field-row{display:flex;gap:12px;}
+.field-row .field{flex:1;}
+.hint{font-size:11px;color:var(--text-faint);margin-top:5px;}
+
+.import-list{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;}
+.import-item{
+  border:1px solid var(--border-solid);border-radius:7px;padding:10px 12px;
+  background:var(--bg-base);
+}
+.import-item-head{display:flex;align-items:center;gap:10px;}
+.import-item-head input[type=checkbox]{accent-color:var(--accent-mint);width:15px;height:15px;}
+.import-item-head .iname{flex:1;font-weight:600;font-size:13px;}
+.import-preview{
+  margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  background:var(--bg-panel);border-radius:5px;padding:8px 10px;
+  white-space:pre-wrap;max-height:80px;overflow:hidden;
+  border:1px solid var(--border-solid);
+}
+.toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--bg-elevated);border:1px solid var(--border-solid);
+  color:var(--text-primary);padding:11px 18px;border-radius:8px;font-size:12.5px;
+  font-family:var(--mono);opacity:0;transition:all .25s;pointer-events:none;z-index:100;
+  box-shadow:0 10px 30px -8px #000a;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div id="lockScreen">
+  <div class="lock-card">
+    <div class="lock-titlebar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span>~/cofre — locked</span>
+    </div>
+    <div class="lock-body">
+      <div class="lock-glyph">// cofre de código</div>
+      <h1 class="lock-title" id="lockTitle">bem-vindo</h1>
+      <p class="lock-sub" id="lockSub">Crie uma senha mestra. Ela nunca é enviada ou salva — só existe na sua cabeça e é usada para criptografar tudo localmente.</p>
+
+      <div class="prompt-row">
+        <span class="chevron">$</span>
+        <input type="password" id="pwInput" placeholder="senha mestra" autocomplete="off">
+        <div class="cursor-blink"></div>
+      </div>
+      <div class="prompt-row" id="pwConfirmRow" style="margin-top:10px;">
+        <span class="chevron">$</span>
+        <input type="password" id="pwConfirmInput" placeholder="confirme a senha mestra" autocomplete="off">
+      </div>
+
+      <div class="lock-error" id="lockError"></div>
+
+      <div class="lock-actions">
+        <button class="btn btn-primary" id="lockSubmitBtn">criar cofre →</button>
+      </div>
+
+      <div class="lock-footnote" id="lockFootnote">
+        AES-256-GCM · chave derivada por PBKDF2 (150k iterações)<br>
+        Tudo fica salvo localmente, criptografado. Sem senha, sem acesso — não há "esqueci a senha".
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="brand"><div class="brand-dot"></div>cofre.vault</div>
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="buscar por nome, tag ou linguagem...">
+    </div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="btnImport">↓ importar</button>
+      <button class="icon-btn" id="btnExport">↑ exportar</button>
+      <button class="icon-btn" id="btnNewProject">+ projeto</button>
+      <button class="icon-btn primary" id="btnNewSnippet">+ código</button>
+      <button class="icon-btn" id="btnLock" title="Bloquear cofre">🔒 bloquear</button>
+    </div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main-pane" id="mainPane">
+      <div class="welcome">
+        <div class="welcome-glyph">{ }</div>
+        <h2>nenhum código selecionado</h2>
+        <p>Escolha um item na barra lateral, ou crie um novo código com "+ código".</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: snippet form -->
+<div class="modal-overlay" id="modalSnippet">
+  <div class="modal wide">
+    <div class="modal-head">
+      <h3 id="snippetModalTitle">novo código</h3>
+      <button class="modal-close" data-close="modalSnippet">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome</label>
+        <input type="text" id="fName" placeholder="ex: hash de senha com bcrypt">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Projeto</label>
+          <select id="fProject"></select>
+        </div>
+        <div class="field">
+          <label>Linguagem</label>
+          <select id="fLang"></select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tags (separadas por vírgula)</label>
+        <input type="text" id="fTags" placeholder="ex: auth, util, backend">
+      </div>
+      <div class="field">
+        <label>Código</label>
+        <textarea id="fCode" spellcheck="false" placeholder="cole ou digite seu código aqui..."></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modalSnippet">cancelar</button>
+      <button class="btn btn-primary" id="fSaveBtn">salvar código</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: new project -->
+<div class="modal-overlay" id="modalProject">
+  <div class="modal">
+    <div class="modal-head"><h3>novo projeto</h3><button class="modal-close" data-close="modalProject">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Nome do projeto</label>
+        <input type="text" id="pNewName" placeholder="ex: api-pagamentos">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modalProject">cancelar</button>
+      <button class="btn btn-primary" id="pSaveBtn">criar projeto</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: export -->
+<div class="modal-overlay" id="modalExport">
+  <div class="modal">
+    <div class="modal-head"><h3>exportar</h3><button class="modal-close" data-close="modalExport">✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>O que exportar</label>
+        <select id="eScope"></select>
+      </div>
+      <p class="hint">Gera um arquivo .json legível, sem criptografia — pronto para compartilhar, versionar ou importar em outro cofre.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modalExport">cancelar</button>
+      <button class="btn btn-primary" id="eConfirmBtn">baixar .json</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: import -->
+<div class="modal-overlay" id="modalImport">
+  <div class="modal wide">
+    <div class="modal-head"><h3>importar projeto</h3><button class="modal-close" data-close="modalImport">✕</button></div>
+    <div class="modal-body">
+      <div class="field" id="importPickWrap">
+        <label>Arquivo .json</label>
+        <input type="file" id="importFile" accept="application/json,.json">
+        <p class="hint">Selecione um arquivo exportado por este cofre (ou uma lista de códigos em JSON).</p>
+      </div>
+      <div id="importPreviewWrap" style="display:none;">
+        <div class="field">
+          <label>Importar para o projeto</label>
+          <select id="importTargetProject"></select>
+        </div>
+        <div class="field">
+          <label>Pré-visualização — selecione o que importar (<span id="importCountLabel">0</span> itens)</label>
+          <div class="import-list" id="importList"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close="modalImport">cancelar</button>
+      <button class="btn btn-primary" id="importConfirmBtn" style="display:none;">importar selecionados</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+hljs.configure({ignoreUnescapedHTML:true});
+
+/* ============ CONFIG ============ */
+const LANGUAGES = [
+  ["javascript","JavaScript","#f2c94c"],["typescript","TypeScript","#82aaff"],
+  ["python","Python","#7fdbca"],["java","Java","#f2777a"],["c","C","#82aaff"],
+  ["cpp","C++","#c792ea"],["csharp","C#","#7fdbca"],["go","Go","#82aaff"],
+  ["rust","Rust","#f2777a"],["php","PHP","#c792ea"],["ruby","Ruby","#f2777a"],
+  ["swift","Swift","#f2c94c"],["kotlin","Kotlin","#c792ea"],["html","HTML","#f2777a"],
+  ["css","CSS","#82aaff"],["sql","SQL","#7fdbca"],["bash","Shell/Bash","#7fdbca"],
+  ["json","JSON","#f2c94c"],["yaml","YAML","#82aaff"],["markdown","Markdown","#e7edf6"],
+  ["plaintext","Outro","#7c8aa5"]
+];
+const langColor = (id) => (LANGUAGES.find(l=>l[0]===id)||LANGUAGES[LANGUAGES.length-1])[2];
+const langLabel = (id) => (LANGUAGES.find(l=>l[0]===id)||LANGUAGES[LANGUAGES.length-1])[1];
+
+/* ============ CRYPTO HELPERS ============ */
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = (str) => Uint8Array.from(atob(str), c=>c.charCodeAt(0));
+
+async function deriveKey(password, saltB64){
+  const salt = unb64(saltB64);
+  const baseKey = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    {name:"PBKDF2", salt, iterations:150000, hash:"SHA-256"},
+    baseKey, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]
+  );
+}
+async function encryptObj(key, obj){
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = enc.encode(JSON.stringify(obj));
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, data);
+  return {iv:b64(iv), ct:b64(ct)};
+}
+async function decryptObj(key, payload){
+  const iv = unb64(payload.iv);
+  const ct = unb64(payload.ct);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, ct);
+  return JSON.parse(dec.decode(pt));
+}
+
+/* ============ STATE ============ */
+let cryptoKey = null;
+let vault = null; // {projects:[{id,name,createdAt,snippets:[{id,name,language,tags,code,updatedAt}]}]}
+let activeSnippetId = null;
+let openProjects = new Set();
+let editingSnippetId = null;
+let pendingImportItems = []; // parsed items with selected flag
+
+const $ = (sel) => document.querySelector(sel);
+const $all = (sel) => document.querySelectorAll(sel);
+
+function toast(msg){
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36).slice(-4); }
+
+/* ============ STORAGE (persistent, per-user) ============ */
+async function saveVault(){
+  if(!cryptoKey || !vault) return;
+  const payload = await encryptObj(cryptoKey, vault);
+  await window.storage.set('vault:blob', JSON.stringify(payload), false);
+}
+async function loadMeta(){
+  try{
+    const r = await window.storage.get('vault:meta', false);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+async function loadBlob(){
+  try{
+    const r = await window.storage.get('vault:blob', false);
+    return r ? JSON.parse(r.value) : null;
+  }catch(e){ return null; }
+}
+
+/* ============ LOCK SCREEN LOGIC ============ */
+let mode = "loading"; // "create" | "unlock"
+
+async function initLockScreen(){
+  const meta = await loadMeta();
+  if(meta){
+    mode = "unlock";
+    $("#lockTitle").textContent = "cofre bloqueado";
+    $("#lockSub").textContent = "Digite sua senha mestra para desbloquear.";
+    $("#pwConfirmRow").style.display = "none";
+    $("#lockSubmitBtn").textContent = "desbloquear →";
+    $("#lockFootnote").innerHTML = "AES-256-GCM · a senha nunca sai do seu navegador.";
+  } else {
+    mode = "create";
+    $("#lockTitle").textContent = "bem-vindo";
+    $("#pwConfirmRow").style.display = "flex";
+    $("#lockSubmitBtn").textContent = "criar cofre →";
+  }
+}
+
+async function handleLockSubmit(){
+  const pw = $("#pwInput").value;
+  const err = $("#lockError");
+  err.textContent = "";
+  if(!pw || pw.length < 4){
+    err.textContent = "a senha precisa ter pelo menos 4 caracteres.";
+    return;
+  }
+  if(mode === "create"){
+    const confirmPw = $("#pwConfirmInput").value;
+    if(pw !== confirmPw){
+      err.textContent = "as senhas não coincidem.";
+      return;
+    }
+    const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+    cryptoKey = await deriveKey(pw, salt);
+    const verifier = await encryptObj(cryptoKey, {check:"ok"});
+    await window.storage.set('vault:meta', JSON.stringify({salt, verifier}), false);
+    vault = {projects:[{id:'default', name:'Meus Códigos', createdAt:Date.now(), snippets:[]}]};
+    await saveVault();
+    enterApp();
+  } else {
+    const meta = await loadMeta();
+    try{
+      cryptoKey = await deriveKey(pw, meta.salt);
+      await decryptObj(cryptoKey, meta.verifier); // throws if wrong password
+      const blobPayload = await loadBlob();
+      vault = blobPayload ? await decryptObj(cryptoKey, blobPayload) : {projects:[]};
+      enterApp();
+    }catch(e){
+      err.textContent = "senha incorreta.";
+      cryptoKey = null;
+    }
+  }
+}
+
+function enterApp(){
+  $("#lockScreen").style.display = "none";
+  $("#app").classList.add("active");
+  if(vault.projects.length) openProjects.add(vault.projects[0].id);
+  renderSidebar();
+  renderMain();
+  populateProjectSelects();
+}
+
+$("#lockSubmitBtn").addEventListener("click", handleLockSubmit);
+$("#pwInput").addEventListener("keydown", e=>{ if(e.key==="Enter") handleLockSubmit(); });
+$("#pwConfirmInput").addEventListener("keydown", e=>{ if(e.key==="Enter") handleLockSubmit(); });
+
+$("#btnLock").addEventListener("click", ()=>{
+  cryptoKey = null;
+  vault = null;
+  activeSnippetId = null;
+  $("#app").classList.remove("active");
+  $("#lockScreen").style.display = "flex";
+  $("#pwInput").value = "";
+  $("#pwConfirmInput").value = "";
+  $("#lockError").textContent = "";
+  initLockScreen();
+  toast("cofre bloqueado");
+});
+
+/* ============ SIDEBAR / MAIN RENDER ============ */
+function allSnippetsFlat(){
+  const out = [];
+  vault.projects.forEach(p => p.snippets.forEach(s => out.push({...s, projectId:p.id, projectName:p.name})));
+  return out;
+}
+
+function renderSidebar(){
+  const el = $("#sidebar");
+  const query = ($("#searchInput").value || "").trim().toLowerCase();
+  el.innerHTML = "";
+
+  if(!vault.projects.length){
+    el.innerHTML = `<div class="empty-sidebar">nenhum projeto ainda. crie um com "+ projeto".</div>`;
+    return;
+  }
+
+  vault.projects.forEach(project => {
+    let snippets = project.snippets;
+    if(query){
+      snippets = snippets.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        (s.tags||[]).some(t=>t.toLowerCase().includes(query)) ||
+        langLabel(s.language).toLowerCase().includes(query)
+      );
+      if(!snippets.length && !project.name.toLowerCase().includes(query)) return;
+    }
+
+    const isOpen = openProjects.has(project.id) || !!query;
+    const row = document.createElement("div");
+    row.className = "project-row" + (isOpen ? " open" : "");
+    row.innerHTML = `
+      <svg class="caret" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m9 6 6 6-6 6"/></svg>
+      <span class="pname">${escapeHtml(project.name)}</span>
+      <span class="count">${project.snippets.length}</span>
+    `;
+    row.addEventListener("click", () => {
+      if(openProjects.has(project.id)) openProjects.delete(project.id);
+      else openProjects.add(project.id);
+      renderSidebar();
+    });
+    el.appendChild(row);
+
+    const list = document.createElement("div");
+    list.className = "snippet-list" + (isOpen ? " open" : "");
+    if(!snippets.length){
+      list.innerHTML = `<div class="empty-sidebar" style="padding:6px 16px 10px 38px;">sem códigos.</div>`;
+    }
+    snippets.forEach(s => {
+      const sr = document.createElement("div");
+      sr.className = "snippet-row" + (s.id === activeSnippetId ? " active" : "");
+      sr.innerHTML = `<span class="lang-dot" style="background:${langColor(s.language)}"></span><span class="sname">${escapeHtml(s.name)}</span>`;
+      sr.addEventListener("click", () => { activeSnippetId = s.id; renderSidebar(); renderMain(); });
+      list.appendChild(sr);
+    });
+    el.appendChild(list);
+  });
+}
+
+function findSnippet(id){
+  for(const p of vault.projects){
+    const s = p.snippets.find(x=>x.id===id);
+    if(s) return {snippet:s, project:p};
+  }
+  return null;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+function fmtDate(ts){
+  return new Date(ts).toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+function renderMain(){
+  const el = $("#mainPane");
+  const found = activeSnippetId ? findSnippet(activeSnippetId) : null;
+
+  if(!found){
+    el.innerHTML = `
+      <div class="welcome">
+        <div class="welcome-glyph">{ }</div>
+        <h2>nenhum código selecionado</h2>
+        <p>Escolha um item na barra lateral, ou crie um novo código com "+ código".</p>
+      </div>`;
+    return;
+  }
+
+  const {snippet, project} = found;
+  el.innerHTML = `
+    <div class="snippet-view">
+      <div class="sv-header">
+        <div>
+          <h1 class="sv-title">${escapeHtml(snippet.name)}</h1>
+          <div class="sv-meta">
+            <span class="badge"><span class="lang-dot" style="background:${langColor(snippet.language)}"></span>${langLabel(snippet.language)}</span>
+            <span class="badge">📁 ${escapeHtml(project.name)}</span>
+            ${(snippet.tags||[]).map(t=>`<span class="badge tag-badge">#${escapeHtml(t)}</span>`).join("")}
+          </div>
+          <div class="sv-timestamp">atualizado em ${fmtDate(snippet.updatedAt)}</div>
+        </div>
+        <div class="sv-actions">
+          <button class="btn" id="btnEditSnippet">editar</button>
+          <button class="btn btn-danger" id="btnDeleteSnippet">excluir</button>
+        </div>
+      </div>
+      <div class="code-block-wrap">
+        <div class="code-block-head">
+          <span>${escapeHtml(snippet.name)}.${extForLang(snippet.language)}</span>
+          <button class="copy-mini" id="btnCopyCode">copiar código</button>
+        </div>
+        <pre class="code-pre"><code class="language-${snippet.language}" id="codeBlock"></code></pre>
+      </div>
+    </div>
+  `;
+
+  const codeEl = $("#codeBlock");
+  codeEl.textContent = snippet.code;
+  try{ hljs.highlightElement(codeEl); }catch(e){}
+
+  $("#btnEditSnippet").addEventListener("click", ()=> openSnippetModal(snippet.id));
+  $("#btnDeleteSnippet").addEventListener("click", ()=> deleteSnippet(snippet.id));
+  $("#btnCopyCode").addEventListener("click", ()=>{
+    navigator.clipboard.writeText(snippet.code).then(()=>toast("código copiado para a área de transferência"));
+  });
+}
+
+function extForLang(id){
+  const map = {javascript:"js",typescript:"ts",python:"py",java:"java",c:"c",cpp:"cpp",csharp:"cs",go:"go",rust:"rs",php:"php",ruby:"rb",swift:"swift",kotlin:"kt",html:"html",css:"css",sql:"sql",bash:"sh",json:"json",yaml:"yml",markdown:"md",plaintext:"txt"};
+  return map[id] || "txt";
+}
+
+$("#searchInput").addEventListener("input", renderSidebar);
+
+/* ============ MODAL HELPERS ============ */
+function openModal(id){ $("#"+id).classList.add("active"); }
+function closeModal(id){ $("#"+id).classList.remove("active"); }
+$all("[data-close]").forEach(btn => btn.addEventListener("click", ()=> closeModal(btn.dataset.close)));
+$all(".modal-overlay").forEach(ov => ov.addEventListener("click", (e)=>{ if(e.target===ov) ov.classList.remove("active"); }));
+
+function populateProjectSelects(){
+  const opts = vault.projects.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  $("#fProject").innerHTML = opts;
+  $("#importTargetProject").innerHTML = opts + `<option value="__new__">+ criar novo projeto...</option>`;
+  $("#eScope").innerHTML = `<option value="__all__">todos os projetos</option>` +
+    vault.projects.map(p=>`<option value="${p.id}">apenas: ${escapeHtml(p.name)}</option>`).join("");
+  $("#fLang").innerHTML = LANGUAGES.map(([id,label])=>`<option value="${id}">${label}</option>`).join("");
+}
+
+/* ============ NEW PROJECT ============ */
+$("#btnNewProject").addEventListener("click", ()=>{
+  $("#pNewName").value = "";
+  openModal("modalProject");
+  setTimeout(()=>$("#pNewName").focus(), 50);
+});
+$("#pSaveBtn").addEventListener("click", async ()=>{
+  const name = $("#pNewName").value.trim();
+  if(!name){ toast("dê um nome ao projeto"); return; }
+  const p = {id:uid(), name, createdAt:Date.now(), snippets:[]};
+  vault.projects.push(p);
+  openProjects.add(p.id);
+  await saveVault();
+  populateProjectSelects();
+  renderSidebar();
+  closeModal("modalProject");
+  toast("projeto criado");
+});
+
+/* ============ NEW / EDIT SNIPPET ============ */
+$("#btnNewSnippet").addEventListener("click", ()=> openSnippetModal(null));
+
+function openSnippetModal(snippetId){
+  editingSnippetId = snippetId;
+  if(snippetId){
+    const found = findSnippet(snippetId);
+    $("#snippetModalTitle").textContent = "editar código";
+    $("#fName").value = found.snippet.name;
+    $("#fProject").value = found.project.id;
+    $("#fLang").value = found.snippet.language;
+    $("#fTags").value = (found.snippet.tags||[]).join(", ");
+    $("#fCode").value = found.snippet.code;
+  } else {
+    $("#snippetModalTitle").textContent = "novo código";
+    $("#fName").value = "";
+    $("#fTags").value = "";
+    $("#fCode").value = "";
+    $("#fLang").value = "javascript";
+    if(vault.projects.length) $("#fProject").value = vault.projects[0].id;
+  }
+  openModal("modalSnippet");
+  setTimeout(()=>$("#fName").focus(), 50);
+}
+
+$("#fSaveBtn").addEventListener("click", async ()=>{
+  const name = $("#fName").value.trim();
+  const projectId = $("#fProject").value;
+  const language = $("#fLang").value;
+  const tags = $("#fTags").value.split(",").map(t=>t.trim()).filter(Boolean);
+  const code = $("#fCode").value;
+
+  if(!name){ toast("dê um nome ao código"); return; }
+  if(!projectId){ toast("crie um projeto primeiro"); return; }
+  if(!code.trim()){ toast("cole ou digite algum código"); return; }
+
+  if(editingSnippetId){
+    const found = findSnippet(editingSnippetId);
+    // remove from old project if project changed
+    found.project.snippets = found.project.snippets.filter(s=>s.id!==editingSnippetId);
+    const updated = {...found.snippet, name, language, tags, code, updatedAt:Date.now()};
+    const target = vault.projects.find(p=>p.id===projectId);
+    target.snippets.push(updated);
+  } else {
+    const target = vault.projects.find(p=>p.id===projectId);
+    target.snippets.push({id:uid(), name, language, tags, code, updatedAt:Date.now()});
+    activeSnippetId = target.snippets[target.snippets.length-1].id;
+  }
+
+  openProjects.add(projectId);
+  await saveVault();
+  renderSidebar();
+  renderMain();
+  closeModal("modalSnippet");
+  toast("código salvo no cofre");
+});
+
+async function deleteSnippet(id){
+  const found = findSnippet(id);
+  if(!found) return;
+  if(!confirm(`Excluir "${found.snippet.name}"? Essa ação não pode ser desfeita.`)) return;
+  found.project.snippets = found.project.snippets.filter(s=>s.id!==id);
+  if(activeSnippetId === id) activeSnippetId = null;
+  await saveVault();
+  renderSidebar();
+  renderMain();
+  toast("código excluído");
+}
+
+/* ============ EXPORT ============ */
+$("#btnExport").addEventListener("click", ()=>{
+  populateProjectSelects();
+  openModal("modalExport");
+});
+$("#eConfirmBtn").addEventListener("click", ()=>{
+  const scope = $("#eScope").value;
+  let dataOut, filename;
+  if(scope === "__all__"){
+    dataOut = {exportedAt:new Date().toISOString(), source:"cofre-de-codigos", projects:vault.projects};
+    filename = "cofre-export-completo.json";
+  } else {
+    const p = vault.projects.find(pr=>pr.id===scope);
+    dataOut = {exportedAt:new Date().toISOString(), source:"cofre-de-codigos", project:{name:p.name, snippets:p.snippets}};
+    filename = `cofre-${p.name.replace(/[^a-z0-9-_]+/gi,'_')}.json`;
+  }
+  const blob = new Blob([JSON.stringify(dataOut, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  closeModal("modalExport");
+  toast("arquivo exportado");
+});
+
+/* ============ IMPORT (with preview) ============ */
+$("#btnImport").addEventListener("click", ()=>{
+  $("#importFile").value = "";
+  $("#importPickWrap").style.display = "block";
+  $("#importPreviewWrap").style.display = "none";
+  $("#importConfirmBtn").style.display = "none";
+  pendingImportItems = [];
+  openModal("modalImport");
+});
+
+$("#importFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try{
+      const parsed = JSON.parse(evt.target.result);
+      const items = normalizeImportData(parsed);
+      if(!items.length){ toast("nenhum código reconhecido nesse arquivo"); return; }
+      pendingImportItems = items.map(it => ({...it, id:uid(), selected:true}));
+      showImportPreview();
+    }catch(err){
+      toast("arquivo JSON inválido");
+    }
+  };
+  reader.readAsText(file);
+});
+
+function normalizeImportData(parsed){
+  // Accepts: {projects:[{name,snippets:[]}]}  |  {project:{name,snippets:[]}}  |  {snippets:[]}  |  [snippets]
+  let rawSnippets = [];
+  if(Array.isArray(parsed)){
+    rawSnippets = parsed;
+  } else if(parsed.projects){
+    parsed.projects.forEach(p => (p.snippets||[]).forEach(s => rawSnippets.push({...s, __projectHint:p.name})));
+  } else if(parsed.project){
+    (parsed.project.snippets||[]).forEach(s => rawSnippets.push({...s, __projectHint:parsed.project.name}));
+  } else if(parsed.snippets){
+    rawSnippets = parsed.snippets;
+  }
+  return rawSnippets
+    .filter(s => s && s.name && (s.code !== undefined))
+    .map(s => ({
+      name: s.name,
+      language: LANGUAGES.some(l=>l[0]===s.language) ? s.language : "plaintext",
+      tags: Array.isArray(s.tags) ? s.tags : [],
+      code: s.code,
+      projectHint: s.__projectHint || null
+    }));
+}
+
+function showImportPreview(){
+  $("#importPickWrap").style.display = "none";
+  $("#importPreviewWrap").style.display = "block";
+  $("#importConfirmBtn").style.display = "inline-block";
+  $("#importCountLabel").textContent = pendingImportItems.length;
+  populateProjectSelects();
+
+  const list = $("#importList");
+  list.innerHTML = "";
+  pendingImportItems.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "import-item";
+    const preview = (item.code || "").split("\n").slice(0,4).join("\n");
+    row.innerHTML = `
+      <div class="import-item-head">
+        <input type="checkbox" checked data-id="${item.id}">
+        <span class="lang-dot" style="background:${langColor(item.language)}"></span>
+        <span class="iname">${escapeHtml(item.name)}</span>
+        <span class="badge">${langLabel(item.language)}</span>
+      </div>
+      <div class="import-preview">${escapeHtml(preview)}${item.code.split("\n").length>4?"\n…":""}</div>
+    `;
+    row.querySelector("input[type=checkbox]").addEventListener("change", (e)=>{
+      const it = pendingImportItems.find(x=>x.id===item.id);
+      it.selected = e.target.checked;
+    });
+    list.appendChild(row);
+  });
+}
+
+$("#importConfirmBtn").addEventListener("click", async ()=>{
+  const selected = pendingImportItems.filter(i=>i.selected);
+  if(!selected.length){ toast("selecione ao menos um item"); return; }
+
+  let targetId = $("#importTargetProject").value;
+  if(targetId === "__new__"){
+    const name = prompt("Nome do novo projeto:", "Importado");
+    if(!name) return;
+    const p = {id:uid(), name, createdAt:Date.now(), snippets:[]};
+    vault.projects.push(p);
+    targetId = p.id;
+  }
+  const target = vault.projects.find(p=>p.id===targetId);
+  selected.forEach(item => {
+    target.snippets.push({
+      id: uid(),
+      name: item.name,
+      language: item.language,
+      tags: item.tags,
+      code: item.code,
+      updatedAt: Date.now()
+    });
+  });
+  openProjects.add(targetId);
+  await saveVault();
+  populateProjectSelects();
+  renderSidebar();
+  closeModal("modalImport");
+  toast(`${selected.length} código(s) importado(s) para "${target.name}"`);
+});
+
+/* ============ INIT ============ */
+initLockScreen();
+</script>
+</body>
+</html>
